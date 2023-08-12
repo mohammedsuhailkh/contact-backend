@@ -20,8 +20,7 @@ const registerUsers = asyncHandler( async (req, res) => {
     // hashing password using bcrypt
 
     const hashedPaswd = await bcrypt.hash(password, 10);
-    console.log("password :" , hashedPaswd);
-
+    console.log("password :" , hashedPaswd);3
 
 
 
@@ -58,15 +57,16 @@ const loginUsers = asyncHandler( async (req, res) => {
     const loginUser = await user.findOne({email});
     // if email is there, checking the password and comparing it with the hashed password
 
-    if(user && (await bcrypt.compare(password, loginUser.password))){
+    if(loginUser && (await bcrypt.compare(password, loginUser.password))){
         const accessToken = jwt.sign({
-            loginUser: {
-                username : user.username,
-                email : user.email,
+            loginUser: { 
+                username : loginUser.username,
+                email : loginUser.email,
+                id : loginUser.id,
             },
         },
         process.env.ACCESS_TOKEN_SECRET,
-        {expiresIn : "1m"},
+        {expiresIn : "15m"},
         );
         res.status(200).json({accessToken});
     } else{
@@ -79,10 +79,10 @@ const loginUsers = asyncHandler( async (req, res) => {
 });
 
 
-// desc Ssows current User
+// desc Shows current User
 // end point /users/current
 const currentUser = asyncHandler( async (req, res) => {
-    res.json({message: "Current user"})
+    res.json(req.loginUser)
 });
 
 module.exports = {registerUsers, loginUsers, currentUser};
