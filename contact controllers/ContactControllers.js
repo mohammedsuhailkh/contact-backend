@@ -4,7 +4,7 @@ const asyncHandler = require("express-async-handler")
 
 // get api/contacts
 const GetAllContacts = asyncHandler( async (req, res)=> {
-    const contacts =await Contacts.find();
+    const contacts =await Contacts.find({user_id : req.loginUser.id});
     res.status(200).json(contacts) ;
 });
 
@@ -22,6 +22,7 @@ const CreateContacts =asyncHandler( async (req, res)=> {
         name,
         email,
         phone,
+        user_id : req.loginUser.id,
     })
     res.status(200).json(contact) ;
 });
@@ -35,6 +36,10 @@ const GetContact =asyncHandler( async (req, res)=> {
         res.status(400);
         throw new Error("Could not find the contact")
     }
+    if(contact.user_id.toString() !== req.user.id){
+        res.status(403);
+        throw new Error("you dont have permission to do this operation")
+    };
     res.status(200).json(contact) ;
 });
 
@@ -61,7 +66,11 @@ const Deletecontact =asyncHandler( async (req, res)=> {
     if(!contact){
         res.status(400);
         throw new Error("Could not find the contact")
-    }
+    };
+    if(contact.user_id.toString() !== req.loginUser.id){
+        res.status(403);
+        throw new Error("you dont have permission to do this operation")
+    };
     await Contacts.findByIdAndDelete(req.params.id);
     res.status(200).json(contact) ;
 });
